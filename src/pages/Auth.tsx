@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileText, Building2, Users, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { FileText, Building2, Users, Mail, Lock, Eye, EyeOff, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/AuthContext";
@@ -31,13 +31,21 @@ const Auth = () => {
   const { setIsAuthenticated, setUser } = useAuth();
 
   const [signUpData, setSignUpData] = useState({
-    companyName: "",
-    companyEmail: "",
-    industry: "",
-    employeeCount: "",
+    userType: "applicant" as "applicant" | "company",
+    // Common fields
+    email: "",
     password: "",
     confirmPassword: "",
-    agreeToTerms: false
+    agreeToTerms: false,
+    // Applicant fields
+    firstName: "",
+    lastName: "",
+    phone: "",
+    // Company fields
+    companyName: "",
+    industry: "",
+    employeeCount: "",
+    contactPerson: ""
   });
 
   const [signInData, setSignInData] = useState({
@@ -72,15 +80,34 @@ const Auth = () => {
 
     // Simulate API call
     setTimeout(() => {
+      const newUser = {
+        id: Date.now().toString(),
+        email: signUpData.email,
+        role: signUpData.userType,
+        name: signUpData.userType === 'applicant' 
+          ? `${signUpData.firstName} ${signUpData.lastName}`
+          : signUpData.contactPerson || extractNameFromEmail(signUpData.email),
+        companyName: signUpData.userType === 'company' ? signUpData.companyName : undefined,
+        industry: signUpData.userType === 'company' ? signUpData.industry : undefined,
+        profileComplete: false
+      };
+
+      setUser(newUser);
+      setIsAuthenticated(true);
+      
       toast({
         title: "Success!",
-        description: "Your account has been created successfully. Welcome to C-Resume!"
+        description: `Your ${signUpData.userType} account has been created successfully. Welcome to C-Resume!`
       });
+      
       setIsLoading(false);
-      setIsAuthenticated(true);
-      const name = extractNameFromEmail(signUpData.companyEmail);
-      setUser({ name, email: signUpData.companyEmail, gender: "male" }); // Default gender for demo
-      navigate("/");
+      
+      // Navigate based on user type
+      if (signUpData.userType === 'applicant') {
+        navigate("/applicant-dashboard");
+      } else {
+        navigate("/company-dashboard");
+      }
     }, 2000);
   };
 
@@ -88,17 +115,38 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
+    // Simulate API call - determine user type based on email domain or stored data
     setTimeout(() => {
+      // For demo purposes, determine role based on email
+      const isCompanyEmail = signInData.email.includes('company') || signInData.email.includes('corp') || signInData.email.includes('inc');
+      const role = isCompanyEmail ? 'company' : 'applicant';
+      
+      const user = {
+        id: Date.now().toString(),
+        email: signInData.email,
+        role: role as 'applicant' | 'company',
+        name: extractNameFromEmail(signInData.email),
+        companyName: role === 'company' ? 'Demo Company' : undefined,
+        industry: role === 'company' ? 'Technology' : undefined,
+        profileComplete: true
+      };
+
+      setUser(user);
+      setIsAuthenticated(true);
+      
       toast({
         title: "Welcome back!",
         description: "You have been signed in successfully."
       });
+      
       setIsLoading(false);
-      setIsAuthenticated(true);
-      const name = extractNameFromEmail(signInData.email);
-      setUser({ name, email: signInData.email, gender: "male" }); // Placeholder name/gender for demo
-      navigate("/");
+      
+      // Navigate based on user type
+      if (role === 'applicant') {
+        navigate("/applicant-dashboard");
+      } else {
+        navigate("/company-dashboard");
+      }
     }, 1500);
   };
 
@@ -117,19 +165,19 @@ const Auth = () => {
               <CardHeader className="space-y-1 pb-4">
                 <CardTitle className="text-xl">Sign in to your account</CardTitle>
                 <CardDescription>
-                  Enter your company credentials to access your dashboard
+                  Enter your credentials to access your dashboard
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signin-email">Company Email</Label>
+                    <Label htmlFor="signin-email">Email</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
                         id="signin-email"
                         type="email"
-                        placeholder="company@example.com"
+                        placeholder="your@email.com"
                         className="pl-10"
                         value={signInData.email}
                         onChange={(e) => setSignInData({ ...signInData, email: e.target.value })}
@@ -189,87 +237,170 @@ const Auth = () => {
             {/* Sign Up Form */}
             <TabsContent value="signup">
               <CardHeader className="space-y-1 pb-4">
-                <CardTitle className="text-xl">Create your company account</CardTitle>
+                <CardTitle className="text-xl">Create your account</CardTitle>
                 <CardDescription>
-                  Get started with C-Resume for your business
+                  Join C-Resume as an applicant or company
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSignUp} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="company-name">Company Name</Label>
-                    <div className="relative">
-                      <Building2 className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Input
-                        id="company-name"
-                        type="text"
-                        placeholder="Your Company Name"
-                        className="pl-10"
-                        value={signUpData.companyName}
-                        onChange={(e) => setSignUpData({ ...signUpData, companyName: e.target.value })}
-                        required
-                      />
-                    </div>
+                  {/* User Type Selection */}
+                  <div className="space-y-3">
+                    <Label>I am a:</Label>
+                    <RadioGroup
+                      value={signUpData.userType}
+                      onValueChange={(value: "applicant" | "company") => 
+                        setSignUpData({ ...signUpData, userType: value })
+                      }
+                      className="flex space-x-6"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="applicant" id="applicant" />
+                        <Label htmlFor="applicant" className="flex items-center cursor-pointer">
+                          <User className="w-4 h-4 mr-2" />
+                          Job Applicant
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="company" id="company" />
+                        <Label htmlFor="company" className="flex items-center cursor-pointer">
+                          <Building2 className="w-4 h-4 mr-2" />
+                          Company
+                        </Label>
+                      </div>
+                    </RadioGroup>
                   </div>
 
+                  {/* Conditional Fields Based on User Type */}
+                  {signUpData.userType === 'applicant' ? (
+                    <>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="first-name">First Name</Label>
+                          <Input
+                            id="first-name"
+                            type="text"
+                            placeholder="John"
+                            value={signUpData.firstName}
+                            onChange={(e) => setSignUpData({ ...signUpData, firstName: e.target.value })}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="last-name">Last Name</Label>
+                          <Input
+                            id="last-name"
+                            type="text"
+                            placeholder="Doe"
+                            value={signUpData.lastName}
+                            onChange={(e) => setSignUpData({ ...signUpData, lastName: e.target.value })}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone Number</Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          placeholder="+1 (555) 123-4567"
+                          value={signUpData.phone}
+                          onChange={(e) => setSignUpData({ ...signUpData, phone: e.target.value })}
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="company-name">Company Name</Label>
+                        <div className="relative">
+                          <Building2 className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                          <Input
+                            id="company-name"
+                            type="text"
+                            placeholder="Your Company Name"
+                            className="pl-10"
+                            value={signUpData.companyName}
+                            onChange={(e) => setSignUpData({ ...signUpData, companyName: e.target.value })}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="contact-person">Contact Person</Label>
+                        <Input
+                          id="contact-person"
+                          type="text"
+                          placeholder="Your Full Name"
+                          value={signUpData.contactPerson}
+                          onChange={(e) => setSignUpData({ ...signUpData, contactPerson: e.target.value })}
+                          required
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="industry">Industry</Label>
+                        <Select
+                          value={signUpData.industry}
+                          onValueChange={(value) => setSignUpData({ ...signUpData, industry: value })}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your industry" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="technology">Technology</SelectItem>
+                            <SelectItem value="healthcare">Healthcare</SelectItem>
+                            <SelectItem value="finance">Finance</SelectItem>
+                            <SelectItem value="manufacturing">Manufacturing</SelectItem>
+                            <SelectItem value="retail">Retail</SelectItem>
+                            <SelectItem value="education">Education</SelectItem>
+                            <SelectItem value="consulting">Consulting</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="employee-count">Number of Employees</Label>
+                        <div className="relative">
+                          <Users className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                          <Select
+                            value={signUpData.employeeCount}
+                            onValueChange={(value) => setSignUpData({ ...signUpData, employeeCount: value })}
+                          >
+                            <SelectTrigger className="pl-10">
+                              <SelectValue placeholder="Select company size" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1-10">1-10 employees</SelectItem>
+                              <SelectItem value="11-50">11-50 employees</SelectItem>
+                              <SelectItem value="51-200">51-200 employees</SelectItem>
+                              <SelectItem value="201-500">201-500 employees</SelectItem>
+                              <SelectItem value="501-1000">501-1000 employees</SelectItem>
+                              <SelectItem value="1000+">1000+ employees</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Common Fields */}
                   <div className="space-y-2">
-                    <Label htmlFor="company-email">Company Email</Label>
+                    <Label htmlFor="email">Email Address</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
-                        id="company-email"
+                        id="email"
                         type="email"
-                        placeholder="company@example.com"
+                        placeholder="your@email.com"
                         className="pl-10"
-                        value={signUpData.companyEmail}
-                        onChange={(e) => setSignUpData({ ...signUpData, companyEmail: e.target.value })}
+                        value={signUpData.email}
+                        onChange={(e) => setSignUpData({ ...signUpData, email: e.target.value })}
                         required
                       />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="industry">Industry</Label>
-                    <Select
-                      value={signUpData.industry}
-                      onValueChange={(value) => setSignUpData({ ...signUpData, industry: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select your industry" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="technology">Technology</SelectItem>
-                        <SelectItem value="healthcare">Healthcare</SelectItem>
-                        <SelectItem value="finance">Finance</SelectItem>
-                        <SelectItem value="manufacturing">Manufacturing</SelectItem>
-                        <SelectItem value="retail">Retail</SelectItem>
-                        <SelectItem value="education">Education</SelectItem>
-                        <SelectItem value="consulting">Consulting</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="employee-count">Number of Employees</Label>
-                    <div className="relative">
-                      <Users className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                      <Select
-                        value={signUpData.employeeCount}
-                        onValueChange={(value) => setSignUpData({ ...signUpData, employeeCount: value })}
-                      >
-                        <SelectTrigger className="pl-10">
-                          <SelectValue placeholder="Select company size" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1-10">1-10 employees</SelectItem>
-                          <SelectItem value="11-50">11-50 employees</SelectItem>
-                          <SelectItem value="51-200">51-200 employees</SelectItem>
-                          <SelectItem value="201-500">201-500 employees</SelectItem>
-                          <SelectItem value="501-1000">501-1000 employees</SelectItem>
-                          <SelectItem value="1000+">1000+ employees</SelectItem>
-                        </SelectContent>
-                      </Select>
                     </div>
                   </div>
 

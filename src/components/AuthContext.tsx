@@ -1,10 +1,29 @@
 import { createContext, useContext, useState } from "react";
 
-export const AuthContext = createContext({
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'applicant' | 'company';
+  companyName?: string;
+  industry?: string;
+  profileComplete?: boolean;
+}
+
+export interface AuthContextType {
+  isAuthenticated: boolean;
+  setIsAuthenticated: (auth: boolean) => void;
+  user: User | null;
+  setUser: (user: User | null) => void;
+  logout: () => void;
+}
+
+export const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
-  setIsAuthenticated: (auth: boolean) => {},
-  user: null, // { name: string, email: string, gender: "male" | "female" }
-  setUser: (user: any) => {},
+  setIsAuthenticated: () => {},
+  user: null,
+  setUser: () => {},
+  logout: () => {},
 });
 
 export function useAuth() {
@@ -13,11 +32,22 @@ export function useAuth() {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  // Demo default user (male)
-  const [user, setUser] = useState({ name: "Tawanda Moyo", email: "tawanda.moyo@email.com", gender: "male" });
+  const [user, setUser] = useState<User | null>(null);
+
+  const logout = () => {
+    setIsAuthenticated(false);
+    setUser(null);
+  };
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, user, setUser }}>
+    <AuthContext.Provider value={{ 
+      isAuthenticated, 
+      setIsAuthenticated, 
+      user, 
+      setUser,
+      logout 
+    }}>
       {children}
     </AuthContext.Provider>
   );
-} 
+}

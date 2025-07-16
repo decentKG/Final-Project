@@ -127,7 +127,7 @@ const Index = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12">
             {isAuthenticated ? (
-              <Link to="/dashboard">
+              <Link to={user?.role === 'applicant' ? '/applicant-dashboard' : '/company-dashboard'}>
                 <Button 
                   size="lg" 
                   className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-10 py-4 text-lg font-semibold transform hover:scale-105 transition-all duration-200 shadow-2xl animate-heroTitleFadeIn"

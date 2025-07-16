@@ -7,26 +7,42 @@ import CompanyAnalytics from "@/components/CompanyAnalytics";
 
 const navLinks = [
   { to: "/", label: "Home", icon: <Home className="w-5 h-5 mr-1" /> },
-  { to: "/dashboard", label: "Dashboard", icon: <BarChart3 className="w-5 h-5 mr-1" /> },
-  { to: "/dashboard", label: "Analytics", icon: <BarChart3 className="w-5 h-5 mr-1" /> },
-  { to: "/dashboard", label: "Team", icon: <Users className="w-5 h-5 mr-1" /> },
-  { to: "/dashboard", label: "Security", icon: <Shield className="w-5 h-5 mr-1" /> },
-  { to: "/dashboard", label: "Help", icon: <HelpCircle className="w-5 h-5 mr-1" /> },
+  { to: "/help", label: "Help", icon: <HelpCircle className="w-5 h-5 mr-1" /> },
 ];
 
 export default function Navbar() {
-  const { isAuthenticated, setIsAuthenticated } = useAuth();
+  const { isAuthenticated, user, logout } = useAuth();
   const [open, setOpen] = useState(false); // for mobile menu
   const [showAnalytics, setShowAnalytics] = useState(false);
 
-  // Links for authenticated users
-  const authLinks = [
-    { to: "/dashboard", label: "Dashboard", icon: <BarChart3 className="w-5 h-5 mr-1" /> },
-    { to: "/analytics", label: "Analytics", icon: <BarChart3 className="w-5 h-5 mr-1" /> },
-    { to: "/team", label: "Team", icon: <Users className="w-5 h-5 mr-1" /> },
-    { to: "/security", label: "Security", icon: <Shield className="w-5 h-5 mr-1" /> },
-    { to: "/help", label: "Help", icon: <HelpCircle className="w-5 h-5 mr-1" /> },
-  ];
+  // Get dashboard link based on user role
+  const getDashboardLink = () => {
+    if (!user) return "/";
+    return user.role === 'applicant' ? '/applicant-dashboard' : '/company-dashboard';
+  };
+
+  // Links for authenticated users based on role
+  const getAuthLinks = () => {
+    if (!user) return [];
+    
+    const dashboardLink = getDashboardLink();
+    const baseLinks = [
+      { to: dashboardLink, label: "Dashboard", icon: <BarChart3 className="w-5 h-5 mr-1" /> },
+      { to: "/help", label: "Help", icon: <HelpCircle className="w-5 h-5 mr-1" /> },
+    ];
+
+    // Add company-specific links
+    if (user.role === 'company') {
+      baseLinks.splice(1, 0, 
+        { to: "/analytics", label: "Analytics", icon: <BarChart3 className="w-5 h-5 mr-1" /> },
+        { to: "/team", label: "Team", icon: <Users className="w-5 h-5 mr-1" /> },
+        { to: "/security", label: "Security", icon: <Shield className="w-5 h-5 mr-1" /> }
+      );
+    }
+
+    return baseLinks;
+  };
+
   // Links for new members (not signed in)
   const guestLinks = [
     { to: "/security", label: "Security", icon: <Shield className="w-5 h-5 mr-1" /> },
@@ -54,7 +70,7 @@ export default function Navbar() {
             <Home className="w-5 h-5 mr-1" />
             Home
           </Link>
-          {(isAuthenticated ? authLinks : guestLinks).map((link, i) => (
+          {(isAuthenticated ? getAuthLinks() : guestLinks).map((link, i) => (
             <Link
               key={i}
               to={link.to}
@@ -66,7 +82,7 @@ export default function Navbar() {
           ))}
           {isAuthenticated ? (
             <button
-              onClick={() => setIsAuthenticated(false)}
+              onClick={logout}
               className="flex items-center px-4 py-2 rounded-md text-sm font-medium text-red-700 border border-red-200 bg-white hover:bg-red-600 hover:text-white transition"
             >
               <LogOut className="w-5 h-5 mr-1" />
@@ -102,7 +118,7 @@ export default function Navbar() {
             <Home className="w-5 h-5 mr-1" />
             Home
           </Link>
-          {(isAuthenticated ? authLinks : guestLinks).map((link, i) => (
+          {(isAuthenticated ? getAuthLinks() : guestLinks).map((link, i) => (
             <Link
               key={i}
               to={link.to}
@@ -115,7 +131,7 @@ export default function Navbar() {
           ))}
           {isAuthenticated ? (
             <button
-              onClick={() => { setIsAuthenticated(false); setOpen(false); }}
+              onClick={() => { logout(); setOpen(false); }}
               className="flex items-center px-4 py-3 rounded-md text-base font-medium text-red-700 border border-red-200 bg-white hover:bg-red-600 hover:text-white transition w-full text-left"
             >
               <LogOut className="w-5 h-5 mr-1" />

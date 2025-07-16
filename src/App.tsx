@@ -6,7 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
+import ApplicantDashboard from "./pages/ApplicantDashboard";
+import CompanyDashboard from "./pages/CompanyDashboard";
 import NotFound from "./pages/NotFound";
 import Help from "./pages/Help";
 import Analytics from "./pages/Analytics";
@@ -16,12 +17,29 @@ import Resumes from "./pages/Resumes";
 import { AuthProvider } from "@/components/AuthContext";
 import { AnalyticsProvider } from "@/components/AnalyticsContext";
 import Navbar from "@/components/Navbar";
+import { useAuth } from "@/components/AuthContext";
+
+// Protected Route Component
+const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode, allowedRoles: string[] }) => {
+  const { isAuthenticated, user } = useAuth();
+  
+  if (!isAuthenticated || !user) {
+    return <Auth />;
+  }
+  
+  if (!allowedRoles.includes(user.role)) {
+    return <NotFound />;
+  }
+  
+  return <>{children}</>;
+};
 
 const queryClient = new QueryClient();
 
 const App = () => {
   const location = useLocation();
-  const hideNavbar = location.pathname === "/dashboard";
+  const hideNavbar = location.pathname === "/applicant-dashboard" || location.pathname === "/company-dashboard";
+  
   return (
     <AuthProvider>
       <AnalyticsProvider>
@@ -33,7 +51,16 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/applicant-dashboard" element={
+                <ProtectedRoute allowedRoles={['applicant']}>
+                  <ApplicantDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/company-dashboard" element={
+                <ProtectedRoute allowedRoles={['company']}>
+                  <CompanyDashboard />
+                </ProtectedRoute>
+              } />
               <Route path="/help" element={<Help />} />
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/team" element={<Team />} />
