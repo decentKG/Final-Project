@@ -127,13 +127,13 @@ const Index = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12">
             {isAuthenticated ? (
-              <Link to={user?.role === 'applicant' ? '/applicant-dashboard' : '/company-dashboard'}>
+              <Link to="/auth">
                 <Button 
                   size="lg" 
                   className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 px-10 py-4 text-lg font-semibold transform hover:scale-105 transition-all duration-200 shadow-2xl animate-heroTitleFadeIn"
                   style={{ animation: 'heroTitleFadeIn 1.2s cubic-bezier(.77,0,.18,1) 0.6s both' }}
                 >
-                  Dashboard
+                  Get Started
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>

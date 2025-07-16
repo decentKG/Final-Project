@@ -37,9 +37,6 @@ const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode,
 const queryClient = new QueryClient();
 
 const App = () => {
-  const location = useLocation();
-  const hideNavbar = location.pathname === "/applicant-dashboard" || location.pathname === "/company-dashboard";
-  
   return (
     <AuthProvider>
       <AnalyticsProvider>
@@ -47,7 +44,7 @@ const App = () => {
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            {!hideNavbar && <Navbar />}
+            <Navbar />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />

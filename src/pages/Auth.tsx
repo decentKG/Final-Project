@@ -103,11 +103,7 @@ const Auth = () => {
       setIsLoading(false);
       
       // Navigate based on user type
-      if (signUpData.userType === 'applicant') {
-        navigate("/applicant-dashboard");
-      } else {
-        navigate("/company-dashboard");
-      }
+      navigate("/");
     }, 2000);
   };
 
@@ -142,11 +138,7 @@ const Auth = () => {
       setIsLoading(false);
       
       // Navigate based on user type
-      if (role === 'applicant') {
-        navigate("/applicant-dashboard");
-      } else {
-        navigate("/company-dashboard");
-      }
+      navigate("/");
     }, 1500);
   };
 

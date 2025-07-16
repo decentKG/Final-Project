@@ -223,18 +223,8 @@ const CompanyDashboard = () => {
   return (
     <div className="min-h-screen bg-muted/30 flex">
       {/* Sidebar */}
-      <div className="w-64 bg-primary text-primary-foreground flex flex-col sticky top-0 h-screen">
+      <div className="w-64 bg-primary text-primary-foreground flex flex-col sticky top-16 h-[calc(100vh-4rem)]">
         {/* Logo */}
-        <div className="p-6 border-b border-primary-foreground/10">
-          <Link to="/" className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-primary-foreground rounded-lg flex items-center justify-center">
-              <FileText className="w-5 h-5 text-primary" />
-            </div>
-            <span className="text-lg font-bold">C-Resume</span>
-          </Link>
-        </div>
-
-        {/* Company Info */}
         <div className="p-4 border-b border-primary-foreground/10">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-primary-foreground/20 rounded-full flex items-center justify-center">
