@@ -7,10 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { FileText, Building2, Users, Mail, Lock, Eye, EyeOff, User } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { FileText, Building2, Users, Mail, Lock, Eye, EyeOff, User, Check, ChevronsUpDown } from "lucide-react"; // Import Briefcase
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/components/AuthContext";
+import { useAuth, User as AuthUser } from "@/components/AuthContext"; // Import User type
+import { supabase } from "@/lib/supabase";
 
 function extractNameFromEmail(email: string) {
   if (!email) return "User";
@@ -41,6 +44,7 @@ const Auth = () => {
     firstName: "",
     lastName: "",
     phone: "",
+    industryPreferences: [] as string[], // Add industry preferences
     // Company fields
     companyName: "",
     industry: "",
@@ -111,35 +115,43 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call - determine user type based on email domain or stored data
-    setTimeout(() => {
-      // For demo purposes, determine role based on email
-      const isCompanyEmail = signInData.email.includes('company') || signInData.email.includes('corp') || signInData.email.includes('inc');
-      const role = isCompanyEmail ? 'company' : 'applicant';
-      
-      const user = {
-        id: Date.now().toString(),
-        email: signInData.email,
-        role: role as 'applicant' | 'company',
-        name: extractNameFromEmail(signInData.email),
-        companyName: role === 'company' ? 'Demo Company' : undefined,
-        industry: role === 'company' ? 'Technology' : undefined,
-        profileComplete: true
-      };
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: signInData.email,
+      password: signInData.password,
+    });
 
-      setUser(user);
-      setIsAuthenticated(true);
-      
+    if (error || !data.user) {
       toast({
-        title: "Welcome back!",
-        description: "You have been signed in successfully."
+        title: "Sign In Failed",
+        description: error?.message || "An unexpected error occurred.",
+        variant: "destructive",
       });
-      
       setIsLoading(false);
-      
-      // Navigate based on user type
-      navigate("/");
-    }, 1500);
+      return;
+    }
+
+    const { user } = data;
+    const userMetadata = user.user_metadata;
+    
+    const authUser: AuthUser = {
+      id: user.id,
+      email: user.email!,
+      role: userMetadata.role || 'applicant',
+      name: userMetadata.firstName ? `${userMetadata.firstName} ${userMetadata.lastName}` : extractNameFromEmail(user.email!),
+      industryPreferences: userMetadata.industryPreferences || [],
+      // Add other fields as needed
+    };
+
+    setUser(authUser);
+    setIsAuthenticated(true);
+    
+    toast({
+      title: "Welcome back!",
+      description: "You have been signed in successfully."
+    });
+    
+    setIsLoading(false);
+    navigate("/");
   };
 
   return (
@@ -300,6 +312,59 @@ const Auth = () => {
                           value={signUpData.phone}
                           onChange={(e) => setSignUpData({ ...signUpData, phone: e.target.value })}
                         />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>Industry Preferences</Label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              className="w-full justify-between"
+                            >
+                              {signUpData.industryPreferences.length > 0
+                                ? signUpData.industryPreferences.join(', ')
+                                : "Select industries..."}
+                              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-full p-0">
+                            <Command>
+                              <CommandInput placeholder="Search industries..." />
+                              <CommandList>
+                                <CommandEmpty>No industries found.</CommandEmpty>
+                                <CommandGroup>
+                                  {[
+                                    "Technology", "Healthcare", "Finance", "Manufacturing", 
+                                    "Retail", "Education", "Consulting", "Other"
+                                  ].map((industry) => (
+                                    <CommandItem
+                                      key={industry}
+                                      value={industry}
+                                      onSelect={(currentValue) => {
+                                        const preferences = signUpData.industryPreferences;
+                                        const newPreferences = preferences.includes(currentValue)
+                                          ? preferences.filter((item) => item !== currentValue)
+                                          : [...preferences, currentValue];
+                                        setSignUpData({ ...signUpData, industryPreferences: newPreferences });
+                                      }}
+                                    >
+                                      <Check
+                                        className={`mr-2 h-4 w-4 ${
+                                          signUpData.industryPreferences.includes(industry)
+                                            ? "opacity-100"
+                                            : "opacity-0"
+                                        }`}
+                                      />
+                                      {industry}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </>
                   ) : (

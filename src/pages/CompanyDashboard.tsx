@@ -71,69 +71,7 @@ const CompanyDashboard = () => {
   const [selectedResume, setSelectedResume] = useState<Resume | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
-  
-  // Mock data for received resumes
-  const [resumes] = useState<Resume[]>([
-    {
-      id: '1',
-      applicantName: 'John Doe',
-      email: 'john.doe@email.com',
-      phone: '+1 (555) 123-4567',
-      position: 'Software Engineer',
-      experience: '5 years',
-      skills: ['React', 'Node.js', 'Python', 'AWS'],
-      education: 'Master\'s in Computer Science',
-      uploadDate: new Date('2025-01-15'),
-      status: 'pending',
-      matchScore: 95,
-      resumeFile: 'john_doe_resume.pdf',
-      summary: 'Experienced software engineer with expertise in full-stack development and cloud technologies.'
-    },
-    {
-      id: '2',
-      applicantName: 'Sarah Johnson',
-      email: 'sarah.j@email.com',
-      phone: '+1 (555) 987-6543',
-      position: 'Frontend Developer',
-      experience: '3 years',
-      skills: ['React', 'Vue.js', 'TypeScript', 'CSS'],
-      education: 'Bachelor\'s in Computer Science',
-      uploadDate: new Date('2025-01-14'),
-      status: 'reviewed',
-      matchScore: 88,
-      resumeFile: 'sarah_johnson_resume.pdf',
-      summary: 'Creative frontend developer with a passion for user experience and modern web technologies.'
-    },
-    {
-      id: '3',
-      applicantName: 'Michael Chen',
-      email: 'm.chen@email.com',
-      position: 'Data Scientist',
-      experience: '4 years',
-      skills: ['Python', 'Machine Learning', 'SQL', 'TensorFlow'],
-      education: 'PhD in Data Science',
-      uploadDate: new Date('2025-01-13'),
-      status: 'shortlisted',
-      matchScore: 92,
-      resumeFile: 'michael_chen_resume.pdf',
-      summary: 'Data scientist with extensive experience in machine learning and statistical analysis.'
-    },
-    {
-      id: '4',
-      applicantName: 'Emily Rodriguez',
-      email: 'emily.r@email.com',
-      phone: '+1 (555) 456-7890',
-      position: 'UX Designer',
-      experience: '6 years',
-      skills: ['Figma', 'Adobe XD', 'User Research', 'Prototyping'],
-      education: 'Master\'s in Design',
-      uploadDate: new Date('2025-01-12'),
-      status: 'pending',
-      matchScore: 90,
-      resumeFile: 'emily_rodriguez_resume.pdf',
-      summary: 'Senior UX designer focused on creating intuitive and accessible user experiences.'
-    }
-  ]);
+  const [resumes, setResumes] = useState<Resume[]>([]); // Remove mock data
 
   const [jobPostings] = useState<JobPosting[]>([
     {
@@ -484,71 +422,77 @@ const CompanyDashboard = () => {
                   <CardDescription>Manage and review candidate applications</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {filteredResumes.map((resume) => (
-                      <div key={resume.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                        <div className="flex items-center space-x-4">
-                          <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                            <FileText className="w-6 h-6 text-primary" />
-                          </div>
-                          <div>
-                            <div className="font-medium text-lg">{resume.applicantName}</div>
-                            <div className="text-muted-foreground">{resume.position}</div>
-                            <div className="flex items-center space-x-4 text-sm text-muted-foreground mt-1">
-                              <span className="flex items-center">
-                                <Mail className="w-3 h-3 mr-1" />
-                                {resume.email}
-                              </span>
-                              {resume.phone && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredResumes.length > 0 ? (
+                      filteredResumes.map((resume) => (
+                        <Card key={resume.id} className="flex flex-col">
+                          <div className="flex items-center space-x-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors">
+                            <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                              <FileText className="w-6 h-6 text-primary" />
+                            </div>
+                            <div>
+                              <div className="font-medium text-lg">{resume.applicantName}</div>
+                              <div className="text-muted-foreground">{resume.position}</div>
+                              <div className="flex items-center space-x-4 text-sm text-muted-foreground mt-1">
                                 <span className="flex items-center">
-                                  <Phone className="w-3 h-3 mr-1" />
-                                  {resume.phone}
+                                  <Mail className="w-3 h-3 mr-1" />
+                                  {resume.email}
                                 </span>
-                              )}
-                            </div>
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {resume.skills.slice(0, 3).map((skill) => (
-                                <Badge key={skill} variant="secondary" className="text-xs">
-                                  {skill}
-                                </Badge>
-                              ))}
-                              {resume.skills.length > 3 && (
-                                <Badge variant="secondary" className="text-xs">
-                                  +{resume.skills.length - 3} more
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <Badge className={getStatusColor(resume.status)}>
-                              {getStatusIcon(resume.status)}
-                              <span className="ml-1 capitalize">{resume.status}</span>
-                            </Badge>
-                            <div className="text-sm font-medium">
-                              {resume.matchScore}% match
+                                {resume.phone && (
+                                  <span className="flex items-center">
+                                    <Phone className="w-3 h-3 mr-1" />
+                                    {resume.phone}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {resume.skills.slice(0, 3).map((skill) => (
+                                  <Badge key={skill} variant="secondary" className="text-xs">
+                                    {skill}
+                                  </Badge>
+                                ))}
+                                {resume.skills.length > 3 && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    +{resume.skills.length - 3} more
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
                           </div>
-                          <div className="text-xs text-muted-foreground mb-3">
-                            Received {resume.uploadDate.toLocaleDateString()}
+                          <div className="text-right p-4 border-t">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <Badge className={getStatusColor(resume.status)}>
+                                {getStatusIcon(resume.status)}
+                                <span className="ml-1 capitalize">{resume.status}</span>
+                              </Badge>
+                              <div className="text-sm font-medium">
+                                {resume.matchScore}% match
+                              </div>
+                            </div>
+                            <div className="text-xs text-muted-foreground mb-3">
+                              Received {resume.uploadDate.toLocaleDateString()}
+                            </div>
+                            <div className="flex space-x-1">
+                              <Button size="sm" variant="outline" onClick={() => setSelectedResume(resume)}>
+                                <Eye className="w-4 h-4 mr-1" />
+                                View
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => downloadResume(resume)}>
+                                <Download className="w-4 h-4 mr-1" />
+                                Download
+                              </Button>
+                              <Button size="sm" variant="outline">
+                                <MoreHorizontal className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </div>
-                          <div className="flex space-x-1">
-                            <Button size="sm" variant="outline" onClick={() => setSelectedResume(resume)}>
-                              <Eye className="w-4 h-4 mr-1" />
-                              View
-                            </Button>
-                            <Button size="sm" variant="outline" onClick={() => downloadResume(resume)}>
-                              <Download className="w-4 h-4 mr-1" />
-                              Download
-                            </Button>
-                            <Button size="sm" variant="outline">
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
+                        </Card>
+                      ))
+                    ) : (
+                      <div className="text-center py-12 col-span-full">
+                        <p className="text-muted-foreground">No resumes found.</p>
                       </div>
-                    ))}
+                    )}
                   </div>
                 </CardContent>
               </Card>

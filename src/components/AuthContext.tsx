@@ -8,6 +8,7 @@ export interface User {
   companyName?: string;
   industry?: string;
   profileComplete?: boolean;
+  industryPreferences?: string[];
 }
 
 export interface AuthContextType {

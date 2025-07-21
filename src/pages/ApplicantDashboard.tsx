@@ -77,33 +77,7 @@ const ApplicantDashboard = () => {
     certifications: []
   });
 
-  const [applications] = useState<Application[]>([
-    {
-      id: '1',
-      companyName: 'TechCorp Inc.',
-      position: 'Software Engineer',
-      appliedDate: new Date('2025-01-15'),
-      status: 'reviewed',
-      matchScore: 92
-    },
-    {
-      id: '2',
-      companyName: 'InnovateCo',
-      position: 'Frontend Developer',
-      appliedDate: new Date('2025-01-14'),
-      status: 'pending',
-      matchScore: 88
-    },
-    {
-      id: '3',
-      companyName: 'DataSoft Solutions',
-      position: 'Full Stack Developer',
-      appliedDate: new Date('2025-01-12'),
-      status: 'shortlisted',
-      matchScore: 95
-    }
-  ]);
-
+  const [applications, setApplications] = useState<Application[]>([]); // Remove mock data
   const [availableJobs] = useState([
     {
       id: '1',
@@ -558,47 +532,31 @@ const ApplicantDashboard = () => {
             <Card>
               <CardHeader>
                 <CardTitle>My Applications</CardTitle>
-                <CardDescription>Track all your job applications</CardDescription>
+                <CardDescription>Track the status of your job applications.</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {applications.map((app) => (
-                    <div key={app.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                          <Briefcase className="w-6 h-6 text-primary" />
-                        </div>
+                  {applications.length > 0 ? (
+                    applications.map((app, index) => (
+                      <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
-                          <div className="font-medium text-lg">{app.position}</div>
-                          <div className="text-muted-foreground">{app.companyName}</div>
-                          <div className="text-sm text-muted-foreground">
+                          <p className="font-semibold">{app.position}</p>
+                          <p className="text-sm text-muted-foreground">{app.companyName}</p>
+                        </div>
+                        <div className="text-right">
+                          <Badge className={getStatusColor(app.status)}>
+                            {getStatusIcon(app.status)}
+                            <span className="ml-1">{app.status}</span>
+                          </Badge>
+                          <p className="text-xs text-muted-foreground mt-1">
                             Applied on {app.appliedDate.toLocaleDateString()}
-                          </div>
+                          </p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <Badge className={getStatusColor(app.status)}>
-                          {getStatusIcon(app.status)}
-                          <span className="ml-1 capitalize">{app.status}</span>
-                        </Badge>
-                        {app.matchScore && (
-                          <div className="text-sm text-muted-foreground mt-2">
-                            Match Score: {app.matchScore}%
-                          </div>
-                        )}
-                        <div className="flex space-x-2 mt-2">
-                          <Button size="sm" variant="outline">
-                            <Eye className="w-4 h-4 mr-1" />
-                            View
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <Download className="w-4 h-4 mr-1" />
-                            Download
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <p className="text-center text-muted-foreground">You have not submitted any applications yet.</p>
+                  )}
                 </div>
               </CardContent>
             </Card>

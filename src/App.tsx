@@ -18,6 +18,7 @@ import { AuthProvider } from "@/components/AuthContext";
 import { AnalyticsProvider } from "@/components/AnalyticsContext";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/components/AuthContext";
+import AuthDemo from "./components/AuthDemo";
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactNode, allowedRoles: string[] }) => {
