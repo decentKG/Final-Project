@@ -6,27 +6,22 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { 
   FileText, 
   Upload, 
   User, 
-  Mail, 
-  Phone, 
-  MapPin, 
   Briefcase, 
-  GraduationCap,
-  Award,
   Send,
   Eye,
-  Download,
   CheckCircle,
   Clock,
   AlertCircle,
   LogOut,
   Settings,
   Bell,
-  Search
+  Search,
+  Menu // Added Menu icon
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/components/AuthContext";
@@ -54,6 +49,74 @@ interface Profile {
   certifications: string[];
 }
 
+const SidebarNav = ({ activeSection, setActiveSection, logout }) => (
+  <div className="w-full bg-primary text-primary-foreground flex flex-col h-full">
+    {/* Logo */}
+    <div className="p-4 border-b border-primary-foreground/10">
+      <div className="flex items-center space-x-3">
+        <div className="w-10 h-10 bg-primary-foreground/20 rounded-full flex items-center justify-center">
+          <User className="w-5 h-5" />
+        </div>
+        <div>
+          <div className="font-medium">{useAuth().user?.name}</div>
+          <div className="text-xs text-primary-foreground/70">Job Applicant</div>
+        </div>
+      </div>
+    </div>
+
+    {/* Navigation */}
+    <nav className="flex-1 p-4">
+      <div className="space-y-2">
+        <Button 
+          variant="ghost" 
+          className={`w-full justify-start ${activeSection === 'overview' ? 'bg-primary-foreground/20 text-primary-foreground' : 'text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground'}`}
+          onClick={() => setActiveSection('overview')}
+        >
+          <Briefcase className="w-4 h-4 mr-3" />
+          Overview
+        </Button>
+        <Button 
+          variant="ghost" 
+          className={`w-full justify-start ${activeSection === 'profile' ? 'bg-primary-foreground/20 text-primary-foreground' : 'text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground'}`}
+          onClick={() => setActiveSection('profile')}
+        >
+          <User className="w-4 h-4 mr-3" />
+          My Profile
+        </Button>
+        <Button 
+          variant="ghost" 
+          className={`w-full justify-start ${activeSection === 'upload' ? 'bg-primary-foreground/20 text-primary-foreground' : 'text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground'}`}
+          onClick={() => setActiveSection('upload')}
+        >
+          <Upload className="w-4 h-4 mr-3" />
+          Upload Resume
+        </Button>
+        <Button 
+          variant="ghost" 
+          className={`w-full justify-start ${activeSection === 'applications' ? 'bg-primary-foreground/20 text-primary-foreground' : 'text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground'}`}
+          onClick={() => setActiveSection('applications')}
+        >
+          <FileText className="w-4 h-4 mr-3" />
+          My Applications
+        </Button>
+      </div>
+    </nav>
+
+    {/* Bottom Nav */}
+    <div className="p-4 border-t border-primary-foreground/10 space-y-2">
+      <Button variant="ghost" className="w-full justify-start text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground">
+        <Settings className="w-4 h-4 mr-3" />
+        Settings
+      </Button>
+      <Button variant="ghost" className="w-full justify-start text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground" onClick={logout}>
+        <LogOut className="w-4 h-4 mr-3" />
+        Logout
+      </Button>
+    </div>
+  </div>
+);
+
+
 const ApplicantDashboard = () => {
   const { user, logout } = useAuth();
   const { toast } = useToast();
@@ -77,7 +140,7 @@ const ApplicantDashboard = () => {
     certifications: []
   });
 
-  const [applications, setApplications] = useState<Application[]>([]); // Remove mock data
+  const [applications, setApplications] = useState<Application[]>([]);
   const [availableJobs] = useState([
     {
       id: '1',
@@ -180,105 +243,54 @@ const ApplicantDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30 flex">
-      {/* Sidebar */}
-      <div className="w-64 bg-primary text-primary-foreground flex flex-col sticky top-16 h-[calc(100vh-4rem)]">
-        {/* Logo */}
-        <div className="p-4 border-b border-primary-foreground/10">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-primary-foreground/20 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="font-medium">{user?.name}</div>
-              <div className="text-xs text-primary-foreground/70">Job Applicant</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 p-4">
-          <div className="space-y-2">
-            <Button 
-              variant="ghost" 
-              className={`w-full justify-start ${activeSection === 'overview' ? 'bg-primary-foreground/20 text-primary-foreground' : 'text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground'}`}
-              onClick={() => setActiveSection('overview')}
-            >
-              <Briefcase className="w-4 h-4 mr-3" />
-              Overview
-            </Button>
-            <Button 
-              variant="ghost" 
-              className={`w-full justify-start ${activeSection === 'profile' ? 'bg-primary-foreground/20 text-primary-foreground' : 'text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground'}`}
-              onClick={() => setActiveSection('profile')}
-            >
-              <User className="w-4 h-4 mr-3" />
-              My Profile
-            </Button>
-            <Button 
-              variant="ghost" 
-              className={`w-full justify-start ${activeSection === 'upload' ? 'bg-primary-foreground/20 text-primary-foreground' : 'text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground'}`}
-              onClick={() => setActiveSection('upload')}
-            >
-              <Upload className="w-4 h-4 mr-3" />
-              Upload Resume
-            </Button>
-            <Button 
-              variant="ghost" 
-              className={`w-full justify-start ${activeSection === 'applications' ? 'bg-primary-foreground/20 text-primary-foreground' : 'text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground'}`}
-              onClick={() => setActiveSection('applications')}
-            >
-              <FileText className="w-4 h-4 mr-3" />
-              My Applications
-            </Button>
-          </div>
-        </nav>
-
-        {/* Bottom Nav */}
-        <div className="p-4 border-t border-primary-foreground/10 space-y-2">
-          <Button variant="ghost" className="w-full justify-start text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground">
-            <Settings className="w-4 h-4 mr-3" />
-            Settings
-          </Button>
-          <Button variant="ghost" className="w-full justify-start text-primary-foreground/80 hover:bg-primary-foreground/10 hover:text-primary-foreground" onClick={logout}>
-            <LogOut className="w-4 h-4 mr-3" />
-            Logout
-          </Button>
-        </div>
+    <div className="min-h-screen bg-muted/30 grid md:grid-cols-[250px_1fr]">
+      {/* Sidebar - Hidden on mobile, visible on medium screens and up */}
+      <div className="hidden md:block">
+        <SidebarNav activeSection={activeSection} setActiveSection={setActiveSection} logout={logout} />
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <header className="bg-white border-b p-6">
-          <div className="flex items-center justify-between">
+        <header className="bg-white border-b p-4 md:p-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {/* Mobile Menu Button */}
+            <div className="md:hidden">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <Menu className="h-6 w-6" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="p-0 w-64">
+                  <SidebarNav activeSection={activeSection} setActiveSection={setActiveSection} logout={logout} />
+                </SheetContent>
+              </Sheet>
+            </div>
             <div>
-              <h1 className="text-2xl font-bold text-foreground">
-                {activeSection === 'overview' ? 'Dashboard Overview' :
-                 activeSection === 'profile' ? 'My Profile' :
-                 activeSection === 'upload' ? 'Upload Resume' :
-                 activeSection === 'applications' ? 'My Applications' : 'Dashboard'}
+              <h1 className="text-xl md:text-2xl font-bold text-foreground">
+                {activeSection.charAt(0).toUpperCase() + activeSection.slice(1)}
               </h1>
-              <p className="text-muted-foreground">Welcome back, {user?.name}</p>
+              <p className="text-sm text-muted-foreground">Welcome back, {user?.name}</p>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input placeholder="Search jobs..." className="pl-10 w-64" />
-              </div>
-              <Button variant="ghost" size="sm">
-                <Bell className="w-5 h-5" />
-              </Button>
+          </div>
+          <div className="flex items-center space-x-2 md:space-x-4">
+            <div className="relative hidden sm:block">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input placeholder="Search jobs..." className="pl-10 w-40 md:w-64" />
             </div>
+            <Button variant="ghost" size="icon">
+              <Bell className="w-5 h-5" />
+            </Button>
           </div>
         </header>
 
         {/* Dashboard Content */}
-        <div className="flex-1 p-6 space-y-6">
+        <div className="flex-1 p-4 md:p-6 space-y-6 overflow-y-auto">
           {activeSection === 'overview' && (
             <>
-              {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              {/* Stats Cards - now responsive */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Applications Sent</CardTitle>
@@ -319,19 +331,20 @@ const ApplicantDashboard = () => {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">Avg Match Score</CardTitle>
-                    <Award className="h-4 w-4 text-muted-foreground" />
+                    {/* Award icon was removed from imports, so it's commented out */}
+                    {/* <Award className="h-4 w-4 text-muted-foreground" /> */}
                   </CardHeader>
                   <CardContent>
                     <div className="text-2xl font-bold">
-                      {Math.round(applications.reduce((sum, app) => sum + (app.matchScore || 0), 0) / applications.length)}%
+                      {applications.length > 0 ? Math.round(applications.reduce((sum, app) => sum + (app.matchScore || 0), 0) / applications.length) : 0}%
                     </div>
                     <p className="text-xs text-muted-foreground">Resume compatibility</p>
                   </CardContent>
                 </Card>
               </div>
 
-              {/* Recent Applications & Available Jobs */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Recent Applications & Available Jobs - now responsive */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 {/* Recent Applications */}
                 <Card>
                   <CardHeader>
@@ -378,16 +391,16 @@ const ApplicantDashboard = () => {
                     <div className="space-y-4">
                       {availableJobs.slice(0, 3).map((job) => (
                         <div key={job.id} className="p-3 border rounded-lg">
-                          <div className="flex items-start justify-between mb-2">
+                          <div className="flex flex-col sm:flex-row items-start justify-between mb-2 gap-2">
                             <div>
                               <div className="font-medium">{job.position}</div>
                               <div className="text-sm text-muted-foreground">{job.company}</div>
                             </div>
-                            <Button size="sm" onClick={() => applyToJob(job.id)}>
+                            <Button size="sm" onClick={() => applyToJob(job.id)} className="w-full sm:w-auto">
                               Apply
                             </Button>
                           </div>
-                          <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                             <span>{job.location}</span>
                             <span>{job.type}</span>
                             <span>{job.salary}</span>

@@ -12,7 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { FileText, Building2, Users, Mail, Lock, Eye, EyeOff, User, Check, ChevronsUpDown } from "lucide-react"; // Import Briefcase
 import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth, User as AuthUser } from "@/components/AuthContext"; // Import User type
+import { useAuth } from "@/components/AuthContext"; // Import User type
 import { supabase } from "@/lib/supabase";
 
 function extractNameFromEmail(email: string) {
@@ -31,7 +31,8 @@ const Auth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { setIsAuthenticated, setUser } = useAuth();
+  // We no longer need setIsAuthenticated or setUser from useAuth
+  // const { setIsAuthenticated, setUser } = useAuth();
 
   const [signUpData, setSignUpData] = useState({
     userType: "applicant" as "applicant" | "company",
@@ -61,7 +62,6 @@ const Auth = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Basic validation
     if (signUpData.password !== signUpData.confirmPassword) {
       toast({
         title: "Error",
@@ -82,75 +82,77 @@ const Auth = () => {
       return;
     }
 
-    // Simulate API call
-    setTimeout(() => {
-      const newUser = {
-        id: Date.now().toString(),
-        email: signUpData.email,
-        role: signUpData.userType,
-        name: signUpData.userType === 'applicant' 
-          ? `${signUpData.firstName} ${signUpData.lastName}`
-          : signUpData.contactPerson || extractNameFromEmail(signUpData.email),
-        companyName: signUpData.userType === 'company' ? signUpData.companyName : undefined,
-        industry: signUpData.userType === 'company' ? signUpData.industry : undefined,
-        profileComplete: false
-      };
+    // Determine the redirect URL based on user type
+    const redirectTo = signUpData.userType === 'company'
+      ? `${import.meta.env.VITE_SITE_URL}/company-dashboard`
+      : `${import.meta.env.VITE_SITE_URL}/applicant-dashboard`;
 
-      setUser(newUser);
-      setIsAuthenticated(true);
-      
+    // Real Supabase signup
+    const { data, error } = await supabase.auth.signUp({
+      email: signUpData.email,
+      password: signUpData.password,
+      options: {
+        data: {
+          firstName: signUpData.firstName,
+          lastName: signUpData.lastName,
+          userType: signUpData.userType,
+          companyName: signUpData.companyName,
+          industry: signUpData.industry,
+          employeeCount: signUpData.employeeCount,
+          contactPerson: signUpData.contactPerson,
+          industryPreferences: signUpData.industryPreferences,
+        },
+        emailRedirectTo: redirectTo, // Add the role-specific redirect URL
+      }
+    });
+
+    if (error) {
       toast({
-        title: "Success!",
-        description: `Your ${signUpData.userType} account has been created successfully. Welcome to C-Resume!`
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
       });
-      
       setIsLoading(false);
-      
-      // Navigate based on user type
-      navigate("/");
-    }, 2000);
+      return;
+    }
+
+    toast({
+      title: "Success!",
+      description: "Account created. Please check your email to confirm your account."
+    });
+
+    setIsLoading(false);
+    // No need to navigate here, user needs to confirm email first
   };
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email: signInData.email,
       password: signInData.password,
     });
 
-    if (error || !data.user) {
+    setIsLoading(false);
+
+    if (error) {
       toast({
         title: "Sign In Failed",
         description: error?.message || "An unexpected error occurred.",
         variant: "destructive",
       });
-      setIsLoading(false);
       return;
     }
-
-    const { user } = data;
-    const userMetadata = user.user_metadata;
     
-    const authUser: AuthUser = {
-      id: user.id,
-      email: user.email!,
-      role: userMetadata.role || 'applicant',
-      name: userMetadata.firstName ? `${userMetadata.firstName} ${userMetadata.lastName}` : extractNameFromEmail(user.email!),
-      industryPreferences: userMetadata.industryPreferences || [],
-      // Add other fields as needed
-    };
+    // The AuthProvider now handles setting the user and auth state automatically.
+    // So we don't need to do it here.
 
-    setUser(authUser);
-    setIsAuthenticated(true);
-    
     toast({
       title: "Welcome back!",
       description: "You have been signed in successfully."
     });
     
-    setIsLoading(false);
     navigate("/");
   };
 
